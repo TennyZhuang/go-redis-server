@@ -294,7 +294,7 @@ func TestAutoHandler(t *testing.T) {
 			}
 		}
 		if match == false {
-			t.Fatalf("Expected one of %q, got: %q for request %q", v.expected, reply, v.request)
+			t.Fatalf("Expected one of %s, got: %+v for request %+v", v.expected, reply, v.request)
 		}
 		close(c)
 	}

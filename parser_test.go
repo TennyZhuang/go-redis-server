@@ -57,17 +57,17 @@ func TestSucess(t *testing.T) {
 	for _, p := range expected {
 		request, err := parseRequest(bufio.NewReader(strings.NewReader(p.s)))
 		if err != nil {
-			t.Fatalf("Un xxpected eror %s when parsting", err, p.s)
+			t.Fatalf("Unexpected error %v while parsing %s", err, p.s)
 		}
 		if request.Name != p.r.Name {
-			t.Fatalf("Expected command %s, got %s", err, p.r.Name, request.Name)
+			t.Fatalf("Expected command %s, got %s", p.r.Name, request.Name)
 		}
 		if len(request.Args) != len(p.r.Args) {
-			t.Fatalf("Args length mismatch %s, got %s", err, p.r.Args, request.Args)
+			t.Fatalf("Args length mismatch %v, got %v", p.r.Args, request.Args)
 		}
 		for i := 0; i < len(request.Args); i += 1 {
 			if !bytes.Equal(request.Args[i], p.r.Args[i]) {
-				t.Fatalf("Expected args %s, got %s", err, p.r.Args, request.Args)
+				t.Fatalf("Expected args %s, got %s", p.r.Args, request.Args)
 			}
 		}
 	}

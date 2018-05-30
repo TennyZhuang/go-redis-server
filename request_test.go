@@ -96,7 +96,7 @@ func TestRequestGetMap(t *testing.T) {
 	for _, v := range invalid {
 		_, reply := v.request.GetMap(v.index)
 		if reply == nil {
-			t.Fatalf("Expected error reply, got nil for %s %d", v.request, v.index)
+			t.Fatalf("Expected error reply, got nil for %+v %d", v.request, v.index)
 		}
 	}
 
@@ -133,10 +133,10 @@ func TestRequestGetMap(t *testing.T) {
 	for _, v := range valid {
 		m, reply := v.request.GetMap(v.index)
 		if reply != nil {
-			t.Fatalf("Expected nil reply, got %s for %s %d", reply, v.request, v.index)
+			t.Fatalf("Expected nil reply, got %+v for %+v %d", reply, v.request, v.index)
 		}
 		if !mapsEqual(m, v.expected) {
-			t.Fatalf("Expected %s got %s for %s", v.expected, v.request, m)
+			t.Fatalf("Expected %s got %+v for %+v", v.expected, v.request, m)
 		}
 	}
 }
