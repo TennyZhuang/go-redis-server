@@ -36,7 +36,7 @@ func TestParseBadRequests(t *testing.T) {
 		"*2\r\n$3\r\ngEt\r\n$100\r\nx\r\n",
 	}
 	for _, v := range requests {
-		_, err := parseRequest(ioutil.NopCloser(strings.NewReader(v)))
+		_, err := parseRequest(bufio.NewReader(strings.NewReader(v)))
 		if err == nil {
 			t.Fatalf("Expected error for request [%s]", v)
 		}
@@ -55,7 +55,7 @@ func TestSucess(t *testing.T) {
 	}
 
 	for _, p := range expected {
-		request, err := parseRequest(ioutil.NopCloser(strings.NewReader(p.s)))
+		request, err := parseRequest(bufio.NewReader(strings.NewReader(p.s)))
 		if err != nil {
 			t.Fatalf("Un xxpected eror %s when parsting", err, p.s)
 		}
