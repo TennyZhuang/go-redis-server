@@ -7,11 +7,12 @@ package redis
 import (
 	"bufio"
 	"fmt"
-	"golang.org/x/net/netutil"
 	"io"
 	"io/ioutil"
 	"net"
 	"reflect"
+
+	"golang.org/x/net/netutil"
 )
 
 type Server struct {
@@ -19,6 +20,8 @@ type Server struct {
 	Addr         string // TCP address to listen on, ":6389" if empty
 	MonitorChans []chan string
 	methods      map[string]HandlerFn
+	onConnect    func()
+	onDisconnect func()
 }
 
 // ListenAndServe receives an argument maxConnection, which limit max connection it can accept simultaneous, passing maxConnection <= 0 means no limit.
@@ -62,6 +65,9 @@ func (srv *Server) Serve(l net.Listener) error {
 // and returns the result.
 func (srv *Server) ServeClient(conn net.Conn) (err error) {
 	defer func() {
+		if srv.onDisconnect != nil {
+			srv.onDisconnect()
+		}
 		if err != nil {
 			fmt.Fprintf(conn, "-%s\n", err)
 		}
@@ -92,6 +98,10 @@ func (srv *Server) ServeClient(conn net.Conn) (err error) {
 		clientAddr = f.Name()
 	default:
 		clientAddr = co.RemoteAddr().String()
+	}
+
+	if srv.onConnect != nil {
+		srv.onConnect()
 	}
 
 	br := bufio.NewReader(conn)
@@ -131,9 +141,23 @@ func NewServer(c *Config) (*Server, error) {
 	}
 
 	rh := reflect.TypeOf(c.handler)
+
+	onConnect, ok := rh.MethodByName("OnConnect")
+	if ok {
+		srv.onConnect = func() {
+			onConnect.Func.Call([]reflect.Value{reflect.ValueOf(c.handler)})
+		}
+	}
+
+	onDisconnect, ok := rh.MethodByName("OnDisconnect")
+	if ok {
+		srv.onDisconnect = func() {
+			onDisconnect.Func.Call([]reflect.Value{reflect.ValueOf(c.handler)})
+		}
+	}
 	for i := 0; i < rh.NumMethod(); i++ {
 		method := rh.Method(i)
-		if method.Name[0] > 'a' && method.Name[0] < 'z' {
+		if (method.Name[0] > 'a' && method.Name[0] < 'z') || method.Name == "OnConnect" || method.Name == "OnDisconnect" {
 			continue
 		}
 		println(method.Name)
